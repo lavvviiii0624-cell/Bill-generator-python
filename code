@@ -1,0 +1,95 @@
+"""
+BILL GENERATOR APPLICATION
+---------------------------
+Generates a customer bill for purchased products.
+Allows entry of product details, quantity and price,
+calculates the total amount, applies GST (if applicable),
+and displays a neatly formatted bill.
+"""
+
+GST_RATE = 18  # GST percentage applied on the total amount (change as needed)
+
+
+def get_positive_number(prompt, is_int=False):
+    """Keep asking until the user enters a valid positive number."""
+    while True:
+        try:
+            value = int(input(prompt)) if is_int else float(input(prompt))
+            if value <= 0:
+                print("Please enter a value greater than 0.")
+                continue
+            return value
+        except ValueError:
+            print("Invalid input! Please enter a numeric value.")
+
+
+def get_products():
+    """Collect product name, quantity and price for each item from the user."""
+    products = []
+    num_items = int(get_positive_number("Enter the number of different products: ", is_int=True))
+
+    for i in range(1, num_items + 1):
+        print(f"\n--- Product {i} ---")
+        name = input("Enter product name: ").strip().title()
+        quantity = get_positive_number("Enter quantity: ", is_int=True)
+        price = get_positive_number("Enter price per unit (Rs.): ")
+        amount = quantity * price
+        products.append({
+            "name": name,
+            "quantity": quantity,
+            "price": price,
+            "amount": amount
+        })
+    return products
+
+
+def calculate_totals(products, apply_gst):
+    """Calculate subtotal, GST amount and grand total."""
+    subtotal = sum(item["amount"] for item in products)
+    gst_amount = (subtotal * GST_RATE / 100) if apply_gst else 0
+    grand_total = subtotal + gst_amount
+    return subtotal, gst_amount, grand_total
+
+
+def print_bill(customer_name, products, subtotal, gst_amount, grand_total, apply_gst):
+    """Display the formatted bill/invoice."""
+    print("\n" + "=" * 55)
+    print(f"{'CUSTOMER BILL / INVOICE':^55}")
+    print("=" * 55)
+    print(f"Customer Name : {customer_name}")
+    print("-" * 55)
+    print(f"{'S.No':<5}{'Product':<18}{'Qty':<6}{'Price':<10}{'Amount':<10}")
+    print("-" * 55)
+
+    for idx, item in enumerate(products, start=1):
+        print(f"{idx:<5}{item['name']:<18}{item['quantity']:<6}"
+              f"{item['price']:<10.2f}{item['amount']:<10.2f}")
+
+    print("-" * 55)
+    print(f"{'Subtotal':<39}{subtotal:>15.2f}")
+
+    if apply_gst:
+        print(f"{'GST (' + str(GST_RATE) + '%)':<39}{gst_amount:>15.2f}")
+
+    print("-" * 55)
+    print(f"{'GRAND TOTAL (Rs.)':<39}{grand_total:>15.2f}")
+    print("=" * 55)
+    print(f"{'Thank you for shopping with us!':^55}")
+    print("=" * 55)
+
+
+def main():
+    print("\n***** WELCOME TO THE BILL GENERATOR *****")
+    customer_name = input("Enter customer name: ").strip().title()
+
+    products = get_products()
+
+    gst_choice = input("\nApply GST on this bill? (y/n): ").strip().lower()
+    apply_gst = gst_choice == "y"
+
+    subtotal, gst_amount, grand_total = calculate_totals(products, apply_gst)
+    print_bill(customer_name, products, subtotal, gst_amount, grand_total, apply_gst)
+
+
+if __name__ == "__main__":
+    main()
